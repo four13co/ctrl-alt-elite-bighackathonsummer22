@@ -1,0 +1,3 @@
+.create-connection-card-container {
+  @apply border-[1px] border-gray-200 rounded-md px-4 py-2 flex justify-center items-center cursor-pointer;
+}

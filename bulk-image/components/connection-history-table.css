@@ -1,0 +1,18 @@
+.app-table th {
+    @apply text-left font-opensans font-medium py-2 px-4 whitespace-nowrap
+}
+.app-table td {
+    @apply text-left font-opensans font-medium py-2 px-4 
+}
+.badge-success{
+    @apply bg-green-200 text-xs py-1 text-center rounded-full text-green-600 font-semibold w-[75px]
+}
+.badge-failed{
+    @apply bg-red-200 text-xs py-1 text-center rounded-full text-red-600 font-semibold w-[75px]
+}
+.app-table thead {
+    @apply bg-gray-200
+}
+.app-table tr {
+    @apply bg-white
+}

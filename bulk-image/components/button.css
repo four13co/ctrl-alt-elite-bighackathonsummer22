@@ -1,0 +1,11 @@
+.btn-primary {
+  @apply text-white bg-secondary text-xs px-4 py-2 rounded-md tracking-wide hover:bg-secondaryHover transition-all;
+}
+
+.btn-primary-outlined {
+  @apply border-[1px] border-secondary py-1 px-2 rounded text-sm text-secondary hover:border-secondaryHover hover:text-secondaryHover
+}
+
+.btn-gray {
+  @apply text-white bg-gray-500 text-xs px-4 py-2 rounded-md tracking-wide hover:bg-gray-300 transition-all;
+}

@@ -1,0 +1,9 @@
+.toggle-checkbox:checked {
+  @apply: right-0 border-white-400;
+  right: 0;
+  border-color: #ffffff;
+}
+.toggle-checkbox:checked + .toggle-label {
+  @apply: bg-blueGray-400;
+  background-color: #ffffff;
+}
