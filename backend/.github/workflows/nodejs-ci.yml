@@ -1,0 +1,91 @@
+# Four13 Actions Workflow for Node.js Deployment to Caprover
+# Needs to Allow four13co, and select non-four13co, actions and reusable workflows
+#          Allow actions created by GitHub
+
+name: Node.js CI
+
+on:
+  push:
+    branches: [ "Development", "Stage", "Production" ]
+  pull_request:
+    branches: [ "Development", "Stage", "Production" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set env to Development
+      if: endsWith(github.ref, '/Development')
+      run: |
+        echo "$SECRETS_ENV_DEV" > .env
+      env:
+        SECRETS_ENV_DEV: ${{secrets.ENV_DEV}}
+
+    - name: Set env to Stage
+      if: endsWith(github.ref, '/Stage')
+      run: |
+        echo "$SECRETS_ENV_STAGE" > .env
+      env:
+        SECRETS_ENV_STAGE: ${{secrets.ENV_STAGE}}
+
+    - name: Set env to Production
+      if: endsWith(github.ref, '/Production')
+      run: |
+        echo "$SECRETS_ENV_PROD" > .env
+      env:
+        SECRETS_ENV_PROD: ${{secrets.ENV_PROD}}
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Setup Sonar Scanner client and run tests
+      run: |
+        sudo apt-get update
+        sudo apt-get install unzip wget
+        wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.7.0.2747-linux.zip
+        unzip sonar-scanner-cli-4.7.0.2747-linux.zip
+        sudo mv sonar-scanner-4.7.0.2747-linux /opt/sonar-scanner
+        rm sonar-scanner-cli-4.7.0.2747-linux.zip
+        echo 'sonar.host.url='${{secrets.SONAR_URL}}':9000' >> /opt/sonar-scanner/conf/sonar-scanner.properties
+        /opt/sonar-scanner/bin/sonar-scanner -Dsonar.projectKey=${GITHUB_REPOSITORY#*/} -Dsonar.sources=. -Dsonar.host.url=${{secrets.SONAR_URL}} -Dsonar.login=${{secrets.SONAR_LOGIN}}
+
+    - name: Write certificate
+      run: |
+        mkdir -p ./ssl
+        echo "$SECRETS_CA_CERTIFICATE_CRT" > ./ssl/ca-certificate.crt
+      env:
+        SECRETS_CA_CERTIFICATE_CRT: ${{secrets.CA_CERTIFICATE_CRT}}
+
+    - name: run Dev
+      if: endsWith(github.ref, '/Development')
+      run: |
+        tar -cvf ./deploy.tar ./* ./.env
+        npm install caprover -g
+        caprover deploy -h ${{secrets.CAP_URL}} -p ${{secrets.CAP_PASSWD}} -a ${GITHUB_REPOSITORY#*/}-dev -t ./deploy.tar
+        curl -X POST -H 'Content-Type:application/json' -d '{"environment":"Development","username":"${GITHUB_ACTOR}","repository":"${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}","revision":"${GITHUB_SHA}"}' "https://airbrake.io/api/v4/projects/${{secrets.AIRBRAKE_PROJECT_ID}}/deploys?key=${{secrets.AIRBRAKE_PROJECT_KEY}}"
+
+    - name: run Stage
+      if: endsWith(github.ref, '/Stage')
+      run: |
+        tar -cvf ./deploy.tar ./* ./.env
+        npm install caprover -g
+        caprover deploy -h ${{secrets.CAP_URL}} -p ${{secrets.CAP_PASSWD}} -a ${GITHUB_REPOSITORY#*/}-stage -t ./deploy.tar
+        curl -X POST -H 'Content-Type:application/json' -d '{"environment":"Stage","username":"${GITHUB_ACTOR}","repository":"${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}","revision":"${GITHUB_SHA}"}' "https://airbrake.io/api/v4/projects/${{secrets.AIRBRAKE_PROJECT_ID}}/deploys?key=${{secrets.AIRBRAKE_PROJECT_KEY}}"
+
+    - name: run Production
+      if: endsWith(github.ref, '/Production')
+      run: |
+        tar -cvf ./deploy.tar ./* ./.env
+        npm install caprover -g
+        caprover deploy -h ${{secrets.CAP_URL}} -p ${{secrets.CAP_PASSWD}} -a ${GITHUB_REPOSITORY#*/}-prod -t ./deploy.tar
+        curl -X POST -H 'Content-Type:application/json' -d '{"environment":"Production","username":"${GITHUB_ACTOR}","repository":"${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}","revision":"${GITHUB_SHA}"}' "https://airbrake.io/api/v4/projects/${{secrets.AIRBRAKE_PROJECT_ID}}/deploys?key=${{secrets.AIRBRAKE_PROJECT_KEY}}"

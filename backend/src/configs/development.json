@@ -1,0 +1,22 @@
+{
+    "env": "development",
+    "dbConfig": {
+        "host": "localhost",
+        "database": "TranZetta",
+        "port": 27017
+    },
+    "log": {
+        "format": "dev",
+        "dir": "../logs"
+    },
+    "cors": {
+        "origin": "*",
+        "credentials": false
+    },
+    "emailConfig": {
+        "host": "smtp.mailtrap.io",
+        "port": 587,
+        "ssl": false,
+        "tls": true
+    }
+}

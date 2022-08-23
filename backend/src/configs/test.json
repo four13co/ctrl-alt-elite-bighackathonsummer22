@@ -1,0 +1,21 @@
+{
+    "env": "test",
+    "dbConfig": {
+        "host": "localhost",
+        "database": "TranZetta_TEST",
+        "port": 27017
+    },
+    "log": {
+        "format": "dev",
+        "dir": "../logs"
+    },
+    "cors": {
+        "origin": true,
+        "credentials": false
+    },
+    "emailConfig": {
+        "host": "",
+        "port": 465,
+        "secure": true
+    }
+}

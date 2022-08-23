@@ -1,0 +1,21 @@
+{
+    "env": "production",
+    "dbConfig": {
+        "host": "localhost",
+        "database": "TranZetta",
+        "port": 27017
+    },
+    "log": {
+        "format": "combined",
+        "dir": "../logs"
+    },
+    "cors": {
+        "origin": "*",
+        "credentials": false
+    },
+    "emailConfig": {
+        "host": "",
+        "port": 465,
+        "secure": true
+    }
+}

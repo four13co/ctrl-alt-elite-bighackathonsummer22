@@ -1,0 +1,56 @@
+stages:
+  - Test
+  - Dev-Build-Deploy
+  - Stage-Build-Deploy
+  - Prod-Build-Deploy
+
+.NVM-Template: &NVM-Template
+  before_script:
+    - export NVM_DIR="/opt/nvm"
+    - source $NVM_DIR/nvm.sh
+    - nvm install $NODE_VERSION
+
+Test:
+  stage: Test
+  <<: *NVM-Template
+  script:
+    - npm ci
+    - npm run build
+    - npm test
+    - /opt/sonar-scanner/bin/sonar-scanner -Dsonar.projectKey=$CI_PROJECT_NAME -Dsonar.sources=. -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_LOGIN
+
+Dev-Build-Deploy:
+  stage: Dev-Build-Deploy
+  <<: *NVM-Template
+  script:
+    - cp $ENV_DEV .env
+    - cat .env
+    - tar -cvf ./deploy.tar ./* ./.env
+    - caprover deploy -h $CAP_URL -p $CAP_PASSWD -a $CI_PROJECT_NAME-dev -t ./deploy.tar
+    - curl -X POST -H "Content-Type':' application/json" -d '{"environment":"Development","username":"'$GITLAB_USER_LOGIN'","repository":"'$CI_PROJECT_URL'","revision":"'$CI_COMMIT_SHA'"}' "https://airbrake.io/api/v4/projects/$AIRBRAKE_PROJECT_ID/deploys?key=$AIRBRAKE_PROJECT_KEY"
+  only:
+    - Development
+
+Stage-Build-Deploy:
+  stage: Stage-Build-Deploy
+  <<: *NVM-Template
+  script:
+    - cp $ENV_STAGE .env
+    - cat .env
+    - tar -cvf ./deploy.tar ./* ./.env
+    - caprover deploy -h $CAP_URL -p $CAP_PASSWD -a $CI_PROJECT_NAME-stage -t ./deploy.tar
+    - curl -X POST -H "Content-Type':' application/json" -d '{"environment":"Stage","username":"'$GITLAB_USER_LOGIN'","repository":"'$CI_PROJECT_URL'","revision":"'$CI_COMMIT_SHA'"}' "https://airbrake.io/api/v4/projects/$AIRBRAKE_PROJECT_ID/deploys?key=$AIRBRAKE_PROJECT_KEY"
+  only:
+    - Stage
+
+Prod-Build-Deploy:
+  stage: Prod-Build-Deploy
+  <<: *NVM-Template
+  script:
+    - cp $ENV_PROD .env
+    - cat .env
+    - tar -cvf ./deploy.tar ./* ./.env
+    - caprover deploy -h $CAP_URL -p $CAP_PASSWD -a $CI_PROJECT_NAME-prod -t ./deploy.tar
+    - curl -X POST -H "Content-Type':' application/json" -d '{"environment":"Production","username":"'$GITLAB_USER_LOGIN'","repository":"'$CI_PROJECT_URL'","revision":"'$CI_COMMIT_SHA'"}' "https://airbrake.io/api/v4/projects/$AIRBRAKE_PROJECT_ID/deploys?key=$AIRBRAKE_PROJECT_KEY"
+  only:
+    - Production

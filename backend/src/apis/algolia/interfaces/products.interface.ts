@@ -1,0 +1,31 @@
+export interface Product {
+  objectID: string;
+  id: number;
+  name: string;
+  brand: string;
+  type: string;
+  sku: string;
+  upc: string;
+  description: string;
+  weight: number;
+  width: number;
+  depth: number;
+  height: number;
+  price: number;
+  retail_price: number;
+  taxable: boolean;
+  image: string;
+  thumbnail: string;
+  product_url: string;
+  categories: string[];
+  rating: number;
+  total_sold: number;
+  inventory_level: number;
+  is_featured: boolean;
+  sort_order: number;
+  availability: string;
+  keywords: string[];
+  variants: string[];
+  created_at: Date;
+  updated_at: Date;
+}
