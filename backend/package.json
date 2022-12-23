@@ -37,7 +37,7 @@
     "hpp": "^0.2.3",
     "html-to-text": "^8.1.0",
     "jest": "^27.0.6",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.0",
     "lodash": "^4.17.21",
     "moment": "^2.29.1",
     "mongodb-memory-server": "^8.0.2",
